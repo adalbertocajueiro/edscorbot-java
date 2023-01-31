@@ -1,0 +1,388 @@
+openapi: 3.0.3
+info:
+  description: It contains a REST API to provide useful functions related to the use of the robotic arm. The functions are related to the management of users and authentication/authorization
+  version: 1.0.0
+  title: ED-Scorbot Service API
+  termsOfService: http://swagger.io/terms/
+  contact: 
+    email: adalberto@computacao.ufcg.edu.br
+  license:
+    name: Apache 2.0 (TO BE DEFINED)
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+tags:
+- name: authentication
+  description: Authentication support for all users
+- name: users
+  description: Support for user management (add, remove, change roles, etc.)
+- name: trajectories
+  description: Suppoert for user trajectories management
+
+paths:
+  /login:
+    post:
+      tags:
+      - authentication
+      summary: Provides login functionalities to the application
+      description: This route performs a validation of user credentials using some infrastructure (oauth, LDAP, etc.). After that, it returns a token to be used during any ohter conversation (via headers).
+      responses:
+        200:
+          description: User successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiLoginResponse'
+        401:
+          description: User not authenticated/allowed
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: User not authenticated
+  /users:
+    get:
+      tags:
+      - users
+      summary: Find all users
+      responses:
+        200:
+          description: Find All Success. This route requires the user has been previously logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiFindAllUsersResponse'
+        401:
+          description: Find All is not allowed to be executed
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User not allowed to use the system or not logged in
+    post:
+      tags:
+      - users
+      summary: Add a new user
+      description: Add a new user to the application. This functionality cab be involked only by admin users.
+      requestBody:
+        x-body-name: newUser
+        description: The new user to be added to the application
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          description: User successfully added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSaveResponse'
+        401:
+          description: Find All is not allowed to be executed
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User not allowed to use the system or not logged in
+  /users/{email}:
+    get:
+      tags:
+      - users
+      summary: Get a user by email
+      parameters:
+        - in: path
+          name: email
+          schema:
+            type: string
+          required: true
+          description: Complete email of the user to get
+      responses:
+        200:
+          description: Find a specific user. This route requires the user has been previously logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiFindOneUserResponse'
+        401:
+          description: Finding users is not allowed to be executed
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User not allowed to use the system or not logged in
+    put:
+      tags:
+      - users
+      summary: Updates an existing user
+      parameters:
+        - in: path
+          name: email
+          description: User email
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: body
+          description: User object that needs to be updated
+          required: true
+          schema:
+            example:
+              email: name@domain.com
+              username: John
+              enabled: true
+              role: admin
+      
+      responses:
+        200:
+          description: Updates a specific user. This route requires the user has been previously logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiUpdateResponse'
+        401:
+          description: Updating users is not allowed to be executed
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User not allowed to use the system or not logged in
+    delete:
+      tags:
+      - users
+      summary: Delete a user by email
+      parameters:
+        - in: path
+          name: email
+          schema:
+            type: string
+          required: true
+          description: Complete email of the user to be deleted
+      responses:
+        200:
+          description: User successfully deleted. This route requires the user has been previously logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDeleteResponse'
+        401:
+          description: Deletes  allowed to be executed
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User not allowed to use the system or not logged in
+  /trajectories:
+    get:
+      tags: 
+        - trajectories
+      summary: Get all saved trajectories of all users
+      responses:
+        200:
+          description: All saved trajectories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trajectory'
+        401:
+          description: Get all trajectories not allowed to be executed
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User not allowed to use this route or not logged in
+  
+  /trajectories/{email}:
+    get:
+      tags: 
+        - trajectories
+      summary: Get all saved trajectories of all users
+      parameters:
+        - in: path
+          name: email
+          schema:
+            type: string
+          required: true
+          description: Complete email of the user to be deleted
+      responses:
+        200:
+          description: All saved trajectories of logged user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trajectory'
+        401:
+          description: Get all trajectories not allowed to be executed
+          content:
+            application/json:
+              schema:
+                example:
+    post:
+      tags: 
+        - trajectories
+      summary: Saves a trajectory for logged user
+      requestBody:
+        x-body-name: newTrajectory
+        description: The new trajectory to be saved 
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Trajectory'
+      responses:
+        200:
+          description: All saved trajectories of logged user
+          content:
+            application/json:
+              schema:
+                example:
+                  message: Trajectory saved
+        401:
+          description: Save trajectory not allowed to be executed
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User not allowed to use this route or not logged in              
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          example: name@company.com
+        username:
+          type: string
+          example: John
+        enabled:
+          type: boolean
+          example: true
+        role:
+          type: string
+          enum:
+            - admin
+            - simple_user
+          example: admin
+    UserList:
+      type: array
+      description: A list of users manipulated by the application
+      items:
+          $ref: '#/components/schemas/User'
+      example: 
+       - email: name1@domain.com
+         username: John First
+         enabled: true
+         roles: admin
+       - email: name2@domain.com
+         username: David First
+         enabled: true
+         roles: user
+       
+    ApiSaveResponse:
+      type: object
+      properties:
+        flag:
+          type: boolean
+          description: Save success or not
+        code:
+          type: integer
+          description: Return the HTTP response code
+          example: 200
+        message:
+          type: string
+          example: Save Success
+    ApiUpdateResponse:
+      type: object
+      properties:
+        flag:
+          type: boolean
+          description: Update success or not
+        code:
+          type: integer
+          description: Return the HTTP response code
+          example: 200
+        message:
+          type: string
+          example: Update Success
+    ApiDeleteResponse:
+      type: object
+      properties:
+        flag:
+          type: boolean
+          description: Delete success or not
+        code:
+          type: integer
+          description: Return the HTTP response code
+          example: 200
+        message:
+          type: string
+          example: Delete Success
+    ApiLoginResponse:
+      type: object
+      properties:
+        flag:
+          type: boolean
+          description: Login success or not
+        code:
+          type: integer
+          description: the HTTP status code of the operation
+          example: 200
+        message:
+          type: string
+          example: Login Success
+    ApiFindAllUsersResponse:
+      type: object
+      properties:
+        flag:
+          type: boolean
+          description: A boolean indicating if the response corresponds to success or error
+        code:
+          type: integer
+          description: the HTTP status code of the operation
+          example: 200
+        message:
+          type: string
+          description: An intuitive message encapsulated in the response
+          example: Find All users Succeded
+        data:
+          $ref: '#/components/schemas/UserList'
+    ApiFindOneUserResponse:
+      type: object
+      properties:
+        flag:
+          type: boolean
+          description: Success or not
+        code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+        message:
+          type: string
+          example: Find One User Success
+        data:
+          example:
+              email: 1
+              username: John
+              enabled: true
+              role: admin
+    Point:
+      description: A quadruple representing a point assumed by all joints of a robot. The order of the joints is (J1,J2,J3,J4)
+      properties:
+        j1Ref:
+          type: integer
+          description: The ref value for joint 1. The possible values are [-450,500]
+        j2Ref: 
+          type: integer
+          description: The ref value for joint 2. The possible values are [-950,800]
+        j3Ref: 
+          type: integer
+          description: The ref value for joint 3. The possible values are [-350,350]
+        j4Ref: 
+          type: integer
+          description: The ref value for joint 4. The possible values are [-1500,1600]
+    Trajectory:
+      description: An array of points to be applied to the arm.
+      type: array
+      items:
+        $ref: '#/components/schemas/Point'
