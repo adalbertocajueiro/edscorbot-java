@@ -170,7 +170,7 @@ paths:
           schema:
             example:
               email: name@domain.com
-              username: John
+              name: John
               enabled: true
               role: admin
       
@@ -335,7 +335,7 @@ components:
         email:
           type: string
           example: name@company.com
-        username:
+        name:
           type: string
           example: John
         enabled:
@@ -354,11 +354,11 @@ components:
           $ref: '#/components/schemas/User'
       example: 
        - email: name1@domain.com
-         username: John First
+         name: John First
          enabled: true
          role: admin
        - email: name2@domain.com
-         username: David First
+         name: David First
          enabled: true
          role: user
        
@@ -450,7 +450,7 @@ components:
         data:
           example:
               email: 1
-              username: John
+              name: John
               enabled: true
               role: admin
     Point:

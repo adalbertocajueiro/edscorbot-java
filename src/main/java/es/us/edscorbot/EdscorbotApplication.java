@@ -1,4 +1,4 @@
-package es.us.robot.edscorbot;
+package es.us.edscorbot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
