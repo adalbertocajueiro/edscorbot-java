@@ -145,6 +145,13 @@ paths:
               schema:
                 example:
                   message: User not allowed to use the system or not logged in
+        404:
+          description: User not found
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User was not found in the system
         500:
           description: Error if some internal problem happens
           content:
@@ -172,7 +179,7 @@ paths:
               email: name@domain.com
               name: John
               enabled: true
-              role: admin
+              role: ADMIN
       
       responses:
         200:
@@ -344,9 +351,9 @@ components:
         role:
           type: string
           enum:
-            - admin
-            - simple_user
-          example: admin
+            - ADMIN
+            - USER
+          example: ADMIN
     UserList:
       type: array
       description: A list of users manipulated by the application
@@ -356,11 +363,11 @@ components:
        - email: name1@domain.com
          name: John First
          enabled: true
-         role: admin
+         role: ADMIN
        - email: name2@domain.com
          name: David First
          enabled: true
-         role: user
+         role: USER
        
     SaveResponse:
       type: object
@@ -452,7 +459,7 @@ components:
               email: 1
               name: John
               enabled: true
-              role: admin
+              role: ADMIN
     Point:
       description: A quadruple representing a point assumed by all joints of a robot. The order of the joints is (J1,J2,J3,J4)
       properties:
