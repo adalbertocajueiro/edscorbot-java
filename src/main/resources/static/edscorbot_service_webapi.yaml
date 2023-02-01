@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  description: It contains a REST API to provide useful functions related to the use of the robotic arm. The functions are related to the management of users and authentication/authorization
+  description: It contains a REST API to provide useful functions related to the use of the robotic arm. The functions are related to the management of users (add, activate/deactivate, update, change roles, etc.), authentication/authorization and trajectory manipulation (CRUD operations)
   version: 1.0.0
   title: ED-Scorbot Service API
   termsOfService: http://swagger.io/terms/
@@ -12,7 +12,7 @@ info:
 
 tags:
 - name: authentication
-  description: Authentication support for all users
+  description: Authentication support for all users, essentially involving login/logout
 - name: users
   description: Support for user management (add, remove, change roles, etc.)
 - name: trajectories
@@ -23,7 +23,7 @@ paths:
     post:
       tags:
       - authentication
-      summary: Provides login functionalities to the application
+      summary: Performs user login
       description: This route performs a validation of user credentials using some infrastructure (oauth, LDAP, etc.). After that, it returns a token to be used during any ohter conversation (via headers).
       responses:
         200:
@@ -31,38 +31,65 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiLoginResponse'
+                $ref: '#/components/schemas/LoginResponse'
         401:
           description: User not authenticated/allowed
           content:
             application/json:
               schema:
                 example: 
-                  message: User not authenticated
+                  message: User not authenticated. Could not validate user credentials
+  /logout:
+    post:
+      tags:
+      - authentication
+      summary: Performs user logout 
+      description: This route performs the logout of the user
+      responses:
+        200:
+          description: User successfully disconnect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        401:
+          description: User not authenticated/allowed, if the user has not been previously logged in
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: User not previously logged
+        500:
+          description: Error if some internal problem happens in the robotic arm service
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
   /users:
     get:
       tags:
       - users
-      summary: Find all users
+      summary: Find all users. For the moment, this funcion is available to all users, independent of their roles.
       responses:
         200:
-          description: Find All Success. This route requires the user has been previously logged in.
+          description: Finds all users successfully. This route requires the user has been previously logged in.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiFindAllUsersResponse'
+                $ref: '#/components/schemas/FindAllUsersResponse'
         401:
-          description: Find All is not allowed to be executed
+          description: Find all users is not allowed to be executed
           content:
             application/json:
               schema:
                 example:
-                  message: User not allowed to use the system or not logged in
+                  message: User not logged in
     post:
       tags:
       - users
-      summary: Add a new user
-      description: Add a new user to the application. This functionality cab be involked only by admin users.
+      summary: Add a new user to the system
+      description: Add a new user to the application. This functionality is available only to admin users.
       requestBody:
         x-body-name: newUser
         description: The new user to be added to the application
@@ -77,14 +104,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiSaveResponse'
+                $ref: '#/components/schemas/SaveResponse'
         401:
-          description: Find All is not allowed to be executed
+          description: Add new user is available only for admin users
           content:
             application/json:
               schema:
                 example:
-                  message: User not allowed to use the system or not logged in
+                  message: Non admin users cannot add other users to the system
+        500:
+          description: Error if some internal problem happens
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
   /users/{email}:
     get:
       tags:
@@ -96,25 +130,32 @@ paths:
           schema:
             type: string
           required: true
-          description: Complete email of the user to get
+          description: The complete email of the user to be searched
       responses:
         200:
           description: Find a specific user. This route requires the user has been previously logged in.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiFindOneUserResponse'
+                $ref: '#/components/schemas/FindOneUserResponse'
         401:
-          description: Finding users is not allowed to be executed
+          description: Finding users cannot be executed
           content:
             application/json:
               schema:
                 example:
                   message: User not allowed to use the system or not logged in
+        500:
+          description: Error if some internal problem happens
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
     put:
       tags:
       - users
-      summary: Updates an existing user
+      summary: Updates an existing user. Admin users can update information of any other user. Simple users can update only its own information
       parameters:
         - in: path
           name: email
@@ -135,22 +176,29 @@ paths:
       
       responses:
         200:
-          description: Updates a specific user. This route requires the user has been previously logged in.
+          description: Updates a specific user. This route requires the user has been previously logged.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiUpdateResponse'
+                $ref: '#/components/schemas/UpdateResponse'
         401:
-          description: Updating users is not allowed to be executed
+          description: Updating user cannot executed
           content:
             application/json:
               schema:
                 example:
-                  message: User not allowed to use the system or not logged in
+                  message: User is not logged in or user does not have privileges to perform this operation
+        500:
+          description: Error if some internal problem happens
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
     delete:
       tags:
       - users
-      summary: Delete a user by email
+      summary: Delete a user by email. This operation actually disables a user in order to maintain its interaction history with the system. Admin users can delete any other user. Simple users can delete only themselves
       parameters:
         - in: path
           name: email
@@ -160,37 +208,51 @@ paths:
           description: Complete email of the user to be deleted
       responses:
         200:
-          description: User successfully deleted. This route requires the user has been previously logged in.
+          description: User successfully deactivated. This route requires the user has been previously logged in.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDeleteResponse'
+                $ref: '#/components/schemas/DeleteResponse'
         401:
-          description: Deletes  allowed to be executed
+          description: Deleting user cannot be executed
           content:
             application/json:
               schema:
                 example:
-                  message: User not allowed to use the system or not logged in
+                  message: User is not logged in or user does not have privileges to perform this operation
+        500:
+          description: Error if some internal problem happens
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
   /trajectories:
     get:
       tags: 
         - trajectories
-      summary: Get all saved trajectories of all users
+      summary: Get all saved trajectories of all users. Admin users can access all trajectories of all users. Simple users can access only their own trajectories
       responses:
         200:
-          description: All saved trajectories
+          description: Saved trajectories
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trajectory'
         401:
-          description: Get all trajectories not allowed to be executed
+          description: Get all trajectories cannot be executed
           content:
             application/json:
               schema:
                 example:
-                  message: User not allowed to use this route or not logged in
+                  message: User is not logged in
+        500:
+          description: Error if some internal problem happens
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
   
   /trajectories/{email}:
     get:
@@ -212,15 +274,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/Trajectory'
         401:
-          description: Get all trajectories not allowed to be executed
+          description: Get all trajectories cannot be executed
           content:
             application/json:
               schema:
-                example:
+                example: User is not logged in
+        500:
+          description: Error if some internal problem happens
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
     post:
       tags: 
         - trajectories
       summary: Saves a trajectory for logged user
+      parameters:
+        - in: path
+          name: email
+          schema:
+            type: string
+          required: true
+          description: Complete email of the owner of the trajectories
       requestBody:
         x-body-name: newTrajectory
         description: The new trajectory to be saved 
@@ -231,19 +307,26 @@ paths:
               $ref: '#/components/schemas/Trajectory'
       responses:
         200:
-          description: All saved trajectories of logged user
+          description: Trajectory saved to the logged user
           content:
             application/json:
               schema:
                 example:
                   message: Trajectory saved
         401:
-          description: Save trajectory not allowed to be executed
+          description: Save trajectory cannot be executed
           content:
             application/json:
               schema:
                 example:
-                  message: User not allowed to use this route or not logged in              
+                  message: User not logged in
+        500:
+          description: Error if some internal problem happens
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
 components:
   schemas:
     User:
@@ -273,13 +356,13 @@ components:
        - email: name1@domain.com
          username: John First
          enabled: true
-         roles: admin
+         role: admin
        - email: name2@domain.com
          username: David First
          enabled: true
-         roles: user
+         role: user
        
-    ApiSaveResponse:
+    SaveResponse:
       type: object
       properties:
         flag:
@@ -287,12 +370,12 @@ components:
           description: Save success or not
         code:
           type: integer
-          description: Return the HTTP response code
+          description: the HTTP response code
           example: 200
         message:
           type: string
           example: Save Success
-    ApiUpdateResponse:
+    UpdateResponse:
       type: object
       properties:
         flag:
@@ -300,12 +383,12 @@ components:
           description: Update success or not
         code:
           type: integer
-          description: Return the HTTP response code
+          description: the HTTP response code
           example: 200
         message:
           type: string
           example: Update Success
-    ApiDeleteResponse:
+    DeleteResponse:
       type: object
       properties:
         flag:
@@ -313,12 +396,12 @@ components:
           description: Delete success or not
         code:
           type: integer
-          description: Return the HTTP response code
+          description: the HTTP response code
           example: 200
         message:
           type: string
           example: Delete Success
-    ApiLoginResponse:
+    LoginResponse:
       type: object
       properties:
         flag:
@@ -326,12 +409,15 @@ components:
           description: Login success or not
         code:
           type: integer
-          description: the HTTP status code of the operation
+          description: the HTTP response code
           example: 200
         message:
           type: string
           example: Login Success
-    ApiFindAllUsersResponse:
+        user:
+          $ref: '#/components/schemas/User'
+            
+    FindAllUsersResponse:
       type: object
       properties:
         flag:
@@ -339,7 +425,7 @@ components:
           description: A boolean indicating if the response corresponds to success or error
         code:
           type: integer
-          description: the HTTP status code of the operation
+          description: the HTTP status code
           example: 200
         message:
           type: string
@@ -347,7 +433,8 @@ components:
           example: Find All users Succeded
         data:
           $ref: '#/components/schemas/UserList'
-    ApiFindOneUserResponse:
+          
+    FindOneUserResponse:
       type: object
       properties:
         flag:
