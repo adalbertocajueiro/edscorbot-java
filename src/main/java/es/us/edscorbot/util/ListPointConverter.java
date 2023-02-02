@@ -4,7 +4,7 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 import java.util.List;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import es.us.edscorbot.models.Point;
@@ -49,7 +49,7 @@ public class ListPointConverter implements  AttributeConverter<List<Point>, Stri
 
     @Override
     public List<Point> convertToEntityAttribute(String dbTrajectory) {
-        LinkedList<Point> trajectory = new LinkedList<Point>();
+        ArrayList<Point> trajectory = new ArrayList<Point>();
         String[] points = dbTrajectory.split(POINT_SEPARATOR);
         for(String dbPoint: points){
             String[] jRefs = dbPoint.split(JOINT_REF_SEPARATOR);

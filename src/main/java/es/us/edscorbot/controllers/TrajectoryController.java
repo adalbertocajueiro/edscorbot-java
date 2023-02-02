@@ -46,6 +46,7 @@ public class TrajectoryController {
         if(user.isPresent()){
             trajectory.setOwner(user.get());
             trajectory.setTimestamp(System.currentTimeMillis());
+            trajectory.setPoints(trajectoryDTO.getPoints());
             try{
                 return ResponseEntity.ok().body(this.trajectoryRepository.save(trajectory));
             } catch (Exception e){

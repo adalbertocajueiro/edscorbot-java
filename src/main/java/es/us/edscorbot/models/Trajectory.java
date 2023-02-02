@@ -2,6 +2,7 @@ package es.us.edscorbot.models;
 
 import java.util.List;
 
+import es.us.edscorbot.util.ListPointConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.ElementCollection;
@@ -34,7 +35,7 @@ public class Trajectory {
     /**
      * The points of this trajectory
      */
-    @ElementCollection
+    @Convert(converter=ListPointConverter.class)
     @Column(name="points")
     private List<Point> points;
 

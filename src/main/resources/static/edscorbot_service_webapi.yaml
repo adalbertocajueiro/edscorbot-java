@@ -170,16 +170,14 @@ paths:
           required: true
           schema:
             type: string
-        - in: query
-          name: body
-          description: User object that needs to be updated
-          required: true
-          schema:
-            example:
-              email: name@domain.com
-              name: John
-              enabled: true
-              role: ADMIN
+      requestBody:
+        x-body-name: user
+        description: User object that needs to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'  
       
       responses:
         200:
@@ -282,11 +280,20 @@ paths:
               example:
                 email: name@company.com
                 points:
-                  items:
-                    j1Ref: 10
-                    j2Ref: 20
-                    j3Ref: 30
-                    j4Ref: 40
+                  [
+                    {
+                      j1Ref: 10,
+                      j2Ref: 10,
+                      j3Ref: 10,
+                      j4Ref: 10,
+                    },
+                    {
+                      j1Ref: 20,
+                      j2Ref: 20,
+                      j3Ref: 20,
+                      j4Ref: 20,
+                    }
+                  ]
       responses:
         200:
           description: Trajectory saved to the logged user

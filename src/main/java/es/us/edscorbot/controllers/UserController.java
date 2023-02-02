@@ -61,7 +61,7 @@ public class UserController {
         }
     }
 
-    @PutMapping(value="/users", produces=MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value="/users/{email}", produces=MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> updateUser(@RequestBody User user){
         
@@ -79,7 +79,9 @@ public class UserController {
         try{
             Optional<User> user = this.userRepository.findById(email);
             if(user.isPresent()){
-                this.userRepository.delete(user.get());
+                User realUser = user.get();
+                realUser.setEnabled(false);
+                this.userRepository.save(realUser);
                 return ResponseEntity.ok().build();
             } else {
                 return ResponseEntity.notFound().build();
