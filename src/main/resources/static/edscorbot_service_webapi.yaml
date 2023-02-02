@@ -260,50 +260,10 @@ paths:
               schema:
                 example: 
                   message: Internal error
-  
-  /trajectories/{email}:
-    get:
-      tags: 
-        - trajectories
-      summary: Get all saved trajectories of all users
-      parameters:
-        - in: path
-          name: email
-          schema:
-            type: string
-          required: true
-          description: Complete email of the user to be deleted
-      responses:
-        200:
-          description: All saved trajectories of logged user
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Trajectory'
-        401:
-          description: Get all trajectories cannot be executed
-          content:
-            application/json:
-              schema:
-                example: User is not logged in
-        500:
-          description: Error if some internal problem happens
-          content:
-            application/json:
-              schema:
-                example: 
-                  message: Internal error
     post:
       tags: 
         - trajectories
       summary: Saves a trajectory for logged user
-      parameters:
-        - in: path
-          name: email
-          schema:
-            type: string
-          required: true
-          description: Complete email of the owner of the trajectories
       requestBody:
         x-body-name: newTrajectory
         description: The new trajectory to be saved 
@@ -311,7 +271,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Trajectory'
+              type: object
+              properties:
+                email: 
+                  type: string
+                points: 
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Point'
+              example:
+                email: name@company.com
+                points:
+                  items:
+                    j1Ref: 10
+                    j2Ref: 20
+                    j3Ref: 30
+                    j4Ref: 40
       responses:
         200:
           description: Trajectory saved to the logged user
@@ -334,6 +309,7 @@ paths:
               schema:
                 example: 
                   message: Internal error
+
 components:
   schemas:
     User:

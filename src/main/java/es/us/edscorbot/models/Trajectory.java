@@ -1,19 +1,18 @@
 package es.us.edscorbot.models;
 
-import java.util.LinkedList;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-import es.us.edscorbot.util.ListPointConverter;
 
 /**
  * This class represens a complete ED Scorbot trajectory (a set of points) to be applied/sent
@@ -29,9 +28,15 @@ public class Trajectory {
      * The owner of this trajectory
      */
     @ManyToOne
-    @Column(name="owner",nullable=false)
     @JoinColumn(name="email", nullable=false)
     private User owner;
+
+    /**
+     * The points of this trajectory
+     */
+    @ElementCollection
+    @Column(name="points")
+    private List<Point> points;
 
     /**
      * The timestap of this trajectory.
@@ -40,11 +45,7 @@ public class Trajectory {
     @Column(name="timestamp")
     private long timestamp;
 
-    /**
-     * The points of this trajectory
-     */
-    @Convert(converter = ListPointConverter.class)
-    private LinkedList<Point> points;
+    
     
     /**
      * It creates an empty trajectory
@@ -53,7 +54,7 @@ public class Trajectory {
     }
 
 
-    public Trajectory(User owner, long timestamp, LinkedList<Point> points) {
+    public Trajectory(User owner, long timestamp, List<Point> points) {
         this.owner = owner;
         this.timestamp = timestamp;
         this.points = points;

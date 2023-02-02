@@ -1,5 +1,9 @@
 package es.us.edscorbot.models;
 
+import java.io.Serializable;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,27 +12,32 @@ import lombok.Setter;
  * for values (one for each joint). The possible values for each joint should
  * respect the ranges of values allowed for each joint individually.
  */
+@Embeddable
 @Getter
 @Setter
-public class Point {
+public class Point implements Serializable{
     /**
      * The ref value for Joint 1
      */
+    @Column(name="j1Ref")
     private double j1Ref;
 
     /**
      * The ref value for Joint 2
      */
+    @Column(name="j2Ref")
     private double j2Ref;
 
     /**
      * The ref value for Joint 3
      */
+    @Column(name="j3Ref")
     private double j3Ref;
 
     /**
      * The ref value for Joint 4
      */
+    @Column(name="j4Ref")
     private double j4Ref;
 
     /**
