@@ -1,10 +1,18 @@
 package es.us.edscorbot.models;
 
+import es.us.edscorbot.util.Role;
 import es.us.edscorbot.util.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,37 +24,50 @@ import lombok.Setter;
 @Setter
 @Getter
 public class User {
-    /**
-     * The email of the user. This attribute is also the identifer of the user
-     */
+    
     @Id
+    @NotBlank
+    @Size(max = 20)
+    private String username;
+
+    @NotBlank
+    @Size(max = 50)
+    @Email
     @Column(name="email")
     private String email;
 
-    /**
-     * The complete name of the user.
-     */
-    @Column(name="name", nullable = false)
+    @NotBlank
+    @Size(max = 120)
+    private String password;
+
+    @NotBlank
+    @Size(max = 120)
     private String name;
 
-    /**
-     * A flag that says if the user is enabled or not.
-     */
-    @Column(name="enabled", nullable = false)
     private boolean enabled;
 
-    /**
-     * The role of this user. 
-     */
-    @Column(name="role", nullable = false)
-    private UserRole role;
+    @ManyToOne
+    @JoinColumn(name = "roleName", nullable = false)
+    private Role role;
 
     public User() {
     }
-    public User(String email, String name, boolean enabled, UserRole role) {
+
+    public User(String username, String email, String password, String name) {
+        this.username = username;
         this.email = email;
+        this.password = password;
         this.name = name;
-        this.enabled = enabled;
+        this.enabled = true;
+        this.role = new Role(UserRole.USER);
+    }
+
+    public User(String username, String email, String password, String name, Role role) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.enabled = true;
         this.role = role;
     }
 }

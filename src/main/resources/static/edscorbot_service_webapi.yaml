@@ -19,12 +19,22 @@ tags:
   description: Suppoert for user trajectories management
 
 paths:
-  /login:
+  /authenticate:
     post:
       tags:
       - authentication
       summary: Performs user login
       description: This route performs a validation of user credentials using some infrastructure (oauth, LDAP, etc.). After that, it returns a token to be used during any ohter conversation (via headers).
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+        - in: query
+          name: password
+          schema:
+            type: string
+          
       responses:
         200:
           description: User successfully authenticated
@@ -271,27 +281,21 @@ paths:
             schema:
               type: object
               properties:
-                email: 
+                username: 
                   type: string
                 points: 
                   type: array
                   items:
                     $ref: '#/components/schemas/Point'
               example:
-                email: name@company.com
+                username: adalberto.farias
                 points:
                   [
                     {
-                      j1Ref: 10,
-                      j2Ref: 10,
-                      j3Ref: 10,
-                      j4Ref: 10,
+                      "coordinates": [1,1,1,1,1,1,200]
                     },
                     {
-                      j1Ref: 20,
-                      j2Ref: 20,
-                      j3Ref: 20,
-                      j4Ref: 20,
+                      "coordinates": [2,2,2,2,2,2,200]
                     }
                   ]
       responses:
@@ -322,9 +326,15 @@ components:
     User:
       type: object
       properties:
+        username:
+          type: string
+          example: adalberto.farias
         email:
           type: string
           example: name@company.com
+        password:
+          type: string
+          example: myPassword
         name:
           type: string
           example: John
@@ -337,6 +347,7 @@ components:
             - ADMIN
             - USER
           example: ADMIN
+
     UserList:
       type: array
       description: A list of users manipulated by the application
@@ -443,23 +454,18 @@ components:
               name: John
               enabled: true
               role: ADMIN
+    Joint:
+      type: integer
+      description: The reference value (angle) of a joint.
+      
     Point:
-      description: A quadruple representing a point assumed by all joints of a robot. The order of the joints is (J1,J2,J3,J4)
-      properties:
-        j1Ref:
-          type: integer
-          description: The ref value for joint 1. The possible values are [-450,500]
-        j2Ref: 
-          type: integer
-          description: The ref value for joint 2. The possible values are [-950,800]
-        j3Ref: 
-          type: integer
-          description: The ref value for joint 3. The possible values are [-350,350]
-        j4Ref: 
-          type: integer
-          description: The ref value for joint 4. The possible values are [-1500,1600]
-    Trajectory:
-      description: An array of points to be applied to the arm.
       type: array
+      description: A tuple (set of coordinates) containing (possibly many) information about the angles of the joints and one information (the last coordinate) meaning the time to wait before accepting the next move command. The representation of a point as an array allows many robots to be handled as there is no fixed number of joints. This is formation should be obtained bu clients before connecting to a specific arm. 
+      items:
+        $ref: '#/components/schemas/Joint'
+    
+    Trajectory:
+      type: array
+      description: A array of points to be applied to the arm.
       items:
         $ref: '#/components/schemas/Point'

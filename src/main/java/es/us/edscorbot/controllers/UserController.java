@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,9 +17,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.us.edscorbot.jwt.WebSecurityConfig;
 import es.us.edscorbot.models.User;
 import es.us.edscorbot.repositories.IUserRepository;
+import es.us.edscorbot.util.Role;
+import es.us.edscorbot.util.UserDTO;
 
+@CrossOrigin(origins = "/**")
 @RestController
 public class UserController {
     
@@ -36,20 +42,28 @@ public class UserController {
 
     @PostMapping(value="/users", produces=MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> save(@RequestBody User user){
+    public ResponseEntity<?> save(@RequestBody UserDTO user){
         try{
-            return ResponseEntity.ok().body(this.userRepository.save(user));
+            User newUser = new User();
+            newUser.setUsername(user.getUsername());
+            newUser.setEmail(user.getEmail());
+            newUser.setEnabled(user.isEnabled());
+            newUser.setName(user.getName());
+            PasswordEncoder pe = WebSecurityConfig.getGlobalEncoder();
+            user.setPassword(pe.encode(user.getPassword()));
+            newUser.setRole(new Role(user.getRole()));
+            return ResponseEntity.ok().body(this.userRepository.save(newUser));
         } catch (Exception e){
             return new ResponseEntity<String>(e.toString(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping(value="/users/{email}", produces=MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value="/users/{username}", produces=MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> getUser(@PathVariable String email){
+    public ResponseEntity<?> getUser(@PathVariable String username){
         
         try{
-            Optional<User> user = this.userRepository.findById(email);
+            Optional<User> user = this.userRepository.findById(username);
             if(user.isPresent()){
                 return ResponseEntity.ok().body(user.get());
             } else {
@@ -61,7 +75,7 @@ public class UserController {
         }
     }
 
-    @PutMapping(value="/users/{email}", produces=MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value="/users/{username}", produces=MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> updateUser(@RequestBody User user){
         
@@ -72,12 +86,12 @@ public class UserController {
         }
     }
 
-    @DeleteMapping(value="/users/{email}", produces=MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value="/users/{username}", produces=MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> deleteUser(@PathVariable String email){
+    public ResponseEntity<?> deleteUser(@PathVariable String username){
         
         try{
-            Optional<User> user = this.userRepository.findById(email);
+            Optional<User> user = this.userRepository.findById(username);
             if(user.isPresent()){
                 User realUser = user.get();
                 realUser.setEnabled(false);

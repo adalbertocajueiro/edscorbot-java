@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,7 @@ import es.us.edscorbot.repositories.ITrajectoryRepository;
 import es.us.edscorbot.repositories.IUserRepository;
 import es.us.edscorbot.util.TrajectoryDTO;
 
+@CrossOrigin(origins = "/**")
 @RestController
 public class TrajectoryController {
     
@@ -41,7 +43,7 @@ public class TrajectoryController {
     @ResponseBody
     public ResponseEntity<?> save(@RequestBody TrajectoryDTO trajectoryDTO){
         Trajectory trajectory = new Trajectory();
-        Optional<User> user = this.userRepository.findById(trajectoryDTO.getEmail());
+        Optional<User> user = this.userRepository.findById(trajectoryDTO.getUsername());
         if(user.isPresent()){
             trajectory.setOwner(user.get());
             trajectory.setTimestamp(System.currentTimeMillis());

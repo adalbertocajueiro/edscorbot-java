@@ -28,7 +28,7 @@ public class Trajectory {
      * The owner of this trajectory
      */
     @ManyToOne
-    @JoinColumn(name="email", nullable=false)
+    @JoinColumn(name="username", nullable=false)
     private User owner;
 
     /**

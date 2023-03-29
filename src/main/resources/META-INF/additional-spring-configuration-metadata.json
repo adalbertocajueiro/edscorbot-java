@@ -1,0 +1,37 @@
+{"properties": [
+  {
+    "name": "edscorbot.app.jwtCookieName",
+    "type": "java.lang.String",
+    "description": "A description for 'edscorbot.app.jwtCookieName'"
+  },
+  {
+    "name": "edscorbot.app.jwtSecret",
+    "type": "java.lang.String",
+    "description": "A description for 'edscorbot.app.jwtSecret'"
+  },
+  {
+    "name": "edscorbot.app.jwtExpirationMs",
+    "type": "java.lang.String",
+    "description": "A description for 'edscorbot.app.jwtExpirationMs'"
+  },
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.secret'"
+  },
+  {
+    "name": "endpoints.shutdown.sensitive",
+    "type": "java.lang.String",
+    "description": "A description for 'endpoints.shutdown.sensitive'"
+  },
+  {
+    "name": "endpoints.shutdown.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'endpoints.shutdown.enabled'"
+  },
+  {
+    "name": "security.ignored",
+    "type": "java.lang.String",
+    "description": "A description for 'security.ignored'"
+  }
+]}

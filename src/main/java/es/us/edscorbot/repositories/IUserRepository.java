@@ -1,5 +1,7 @@
 package es.us.edscorbot.repositories;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import es.us.edscorbot.models.User;

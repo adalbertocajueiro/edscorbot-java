@@ -4,8 +4,12 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import es.us.edscorbot.models.Point;
 
@@ -19,6 +23,7 @@ public class ListPointConverter implements  AttributeConverter<List<Point>, Stri
 
     @Override
     public String convertToDatabaseColumn(List<Point> points) {
+        /* 
         StringBuilder sb = new StringBuilder();
         Iterator<Point> it = points.iterator();
         while(it.hasNext()){
@@ -30,11 +35,18 @@ public class ListPointConverter implements  AttributeConverter<List<Point>, Stri
         }
 
         return sb.toString();
+        */
+
+        Gson gson = new Gson();
+        return gson.toJson(points);
+
     }
 
     private String convertToDatabaseColumn(Point point){
-        StringBuilder sb = new StringBuilder();
+        
 
+        StringBuilder sb = new StringBuilder();
+        /* 
         sb.append(point.getJ1Ref());
         sb.append(JOINT_REF_SEPARATOR);
         sb.append(point.getJ2Ref());
@@ -43,12 +55,13 @@ public class ListPointConverter implements  AttributeConverter<List<Point>, Stri
         sb.append(JOINT_REF_SEPARATOR);
         sb.append(point.getJ3Ref());
         sb.append(JOINT_REF_SEPARATOR);
-
+        */
         return sb.toString();
     }
 
     @Override
     public List<Point> convertToEntityAttribute(String dbTrajectory) {
+        /* 
         ArrayList<Point> trajectory = new ArrayList<Point>();
         String[] points = dbTrajectory.split(POINT_SEPARATOR);
         for(String dbPoint: points){
@@ -63,5 +76,9 @@ public class ListPointConverter implements  AttributeConverter<List<Point>, Stri
             trajectory.add(point);
         }
         return trajectory;
+        */
+        Gson gson = new Gson();
+        Type listType = new TypeToken<ArrayList<Point>>(){}.getType();
+        return gson.fromJson(dbTrajectory, listType);
     }
 }
