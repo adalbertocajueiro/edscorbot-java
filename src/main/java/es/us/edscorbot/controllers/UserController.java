@@ -51,8 +51,6 @@ public class UserController {
             newUser.setEmail(user.getEmail());
             newUser.setEnabled(user.isEnabled());
             newUser.setName(user.getName());
-            PasswordEncoder pe = GlobalPasswordEncoder.getGlobalEncoder();
-            user.setPassword(pe.encode(user.getPassword()));
             newUser.setRole(new Role(user.getRole()));
             return ResponseEntity.ok().body(this.userRepository.save(newUser));
         } catch (Exception e){
