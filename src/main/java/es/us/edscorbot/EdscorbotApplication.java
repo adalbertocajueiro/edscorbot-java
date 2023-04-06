@@ -1,8 +1,5 @@
 package es.us.edscorbot;
 
-import java.sql.SQLException;
-
-import org.h2.tools.Server;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,6 +10,7 @@ public class EdscorbotApplication {
 
 	public static void main(String[] args) {
 
+		/*
 		try {
 			Server h2Server = Server.createTcpServer().start();
 			if (h2Server.isRunning(true)) {
@@ -23,6 +21,7 @@ public class EdscorbotApplication {
 		} catch (SQLException e) {
 			throw new RuntimeException("Failed to start H2 server: ", e);
 		}
+		*/
 
 		SpringApplication.run(EdscorbotApplication.class, args);
 	}

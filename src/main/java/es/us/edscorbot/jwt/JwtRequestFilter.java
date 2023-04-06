@@ -2,7 +2,6 @@ package es.us.edscorbot.jwt;
 
 import java.io.IOException;
 
-import org.apache.catalina.core.ApplicationFilterChain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,12 +12,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-//@Component
+@Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -27,14 +25,26 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
+    
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        boolean r = path.equalsIgnoreCase("/api/authenticate")
+            || path.startsWith("/h2-console")
+            || path.equalsIgnoreCase("/api/signup");
+        return r;
+    }
+
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        String path = request.getRequestURI();
-        System.out.println("ROUTE: " + path);
-        if (path.startsWith("users") || path.startsWith("/trajectories")) {
+        //String path = request.getRequestURI();
+        //System.out.println("ROUTE: " + path);
+        //if (path.startsWith("users") || path.startsWith("/trajectories")) {
             final String requestTokenHeader = request.getHeader("Authorization");
 
             String username = null;
@@ -47,8 +57,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     username = jwtTokenUtil.getUsernameFromToken(jwtToken);
                 } catch (IllegalArgumentException e) {
                     System.out.println("Unable to get JWT Token");
+                    throw e;
                 } catch (ExpiredJwtException e) {
                     System.out.println("JWT Token has expired");
+                    throw e;
                 }
             } else {
                 logger.warn("JWT Token does not begin with Bearer String");
@@ -58,7 +70,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
-
+                
                 // if token is valid configure Spring Security to manually set
                 // authentication
                 if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
@@ -74,11 +86,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 }
             }
             chain.doFilter(request, response);
-        } else {
-            RequestDispatcher dispatcher = request.getRequestDispatcher(path);
-            dispatcher.forward(request, response);
+        //} else {
+        //    RequestDispatcher dispatcher = request.getRequestDispatcher(path);
+        //    dispatcher.forward(request, response);
             
-        }
+        //}
 
         
             

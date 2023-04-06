@@ -14,6 +14,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "scorbot_roles")
 public class Role {
+    
     @Id
     @Enumerated(EnumType.STRING)
     @Column(length = 20)

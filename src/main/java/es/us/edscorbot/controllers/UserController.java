@@ -14,17 +14,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import es.us.edscorbot.jwt.WebSecurityConfig;
 import es.us.edscorbot.models.User;
 import es.us.edscorbot.repositories.IUserRepository;
+import es.us.edscorbot.util.GlobalPasswordEncoder;
 import es.us.edscorbot.util.Role;
 import es.us.edscorbot.util.UserDTO;
 
 @CrossOrigin(origins = "/**")
 @RestController
+@RequestMapping("/api")
 public class UserController {
     
     @Autowired
@@ -49,7 +51,7 @@ public class UserController {
             newUser.setEmail(user.getEmail());
             newUser.setEnabled(user.isEnabled());
             newUser.setName(user.getName());
-            PasswordEncoder pe = WebSecurityConfig.getGlobalEncoder();
+            PasswordEncoder pe = GlobalPasswordEncoder.getGlobalEncoder();
             user.setPassword(pe.encode(user.getPassword()));
             newUser.setRole(new Role(user.getRole()));
             return ResponseEntity.ok().body(this.userRepository.save(newUser));

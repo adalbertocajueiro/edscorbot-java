@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import es.us.edscorbot.repositories.IUserRepository;
 import es.us.edscorbot.util.UserBuilder;
-import es.us.edscorbot.util.UserRole;
 
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
