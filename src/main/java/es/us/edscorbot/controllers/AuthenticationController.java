@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.us.edscorbot.jwt.AuthenticationException;
 import es.us.edscorbot.jwt.CustomAuthenticationProvider;
 import es.us.edscorbot.jwt.JwtTokenUtil;
 import es.us.edscorbot.jwt.JwtUserDetailsService;
@@ -49,34 +50,40 @@ public class AuthenticationController {
     private IUserRepository userRepository;
 
     @PostMapping(value = "/authenticate")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest credentials) throws Exception {
+    public ResponseEntity<?> authenticate(@RequestBody LoginRequest credentials) throws Exception {
 
-        authenticate(credentials.getUsername(), credentials.getPassword());
+        try{
+            authenticate(credentials.getUsername(), credentials.getPassword());
 
-       final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(credentials.getUsername());
+            final UserDetails userDetails = userDetailsService
+                    .loadUserByUsername(credentials.getUsername());
 
-        final String token = jwtTokenUtil.generateToken(userDetails);
+            final String token = jwtTokenUtil.generateToken(userDetails);
 
-        User user = new User();
-        LoginResponse response = new LoginResponse();
-        
-        if(!credentials.getUsername().equals("root")){
-            user = this.userRepository.findById(credentials.getUsername()).get();
-            
-        } else {
-            user = UserBuilder.rootUser();
+            User user = new User();
+            LoginResponse response = new LoginResponse();
+
+            if (!credentials.getUsername().equals("root")) {
+                user = this.userRepository.findById(credentials.getUsername()).get();
+
+            } else {
+                user = UserBuilder.rootUser();
+            }
+
+            response.setEmail(user.getEmail());
+            response.setUsername(user.getUsername());
+            response.setEnabled(user.isEnabled());
+            response.setName(user.getName());
+            response.setRole(user.getRole().getRoleName());
+            response.setToken(token);
+
+            return ResponseEntity.ok(response);
+        } catch (AuthenticationException e){
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        response.setEmail(user.getEmail());
-        response.setUsername(user.getUsername());
-        response.setEnabled(user.isEnabled());
-        response.setName(user.getName());
-        response.setRole(user.getRole().getRoleName());
-        response.setToken(token);
         
-
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping(value = "/signup", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -107,6 +114,11 @@ public class AuthenticationController {
     private void authenticate(String username, String password) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            PasswordEncoder pe = GlobalPasswordEncoder.getGlobalEncoder();
+            if (!pe.matches(password, userDetails.getPassword())) {
+                throw new AuthenticationException("Invalid user/password");
+            }
         } catch (DisabledException e) {
             throw new Exception("USER_DISABLED", e);
         } catch (BadCredentialsException e) {

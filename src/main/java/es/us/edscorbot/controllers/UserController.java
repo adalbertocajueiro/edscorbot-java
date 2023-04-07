@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import es.us.edscorbot.models.User;
 import es.us.edscorbot.repositories.IUserRepository;
+import es.us.edscorbot.util.GlobalPasswordEncoder;
 import es.us.edscorbot.util.Role;
 import es.us.edscorbot.util.UserDTO;
 
@@ -83,11 +84,25 @@ public class UserController {
             Optional<User> found = this.userRepository.findById(username);
             if (found.isPresent()) {
                 User user = found.get();
-                user.setEmail(userDto.getEmail());
+                if(userDto.getEmail() != null 
+                    && !userDto.getEmail().equals(user.getEmail())){
+                    user.setEmail(userDto.getEmail());
+                }
+                if(userDto.getName() != null 
+                    && !userDto.getName().equals(user.getName())){
+                    user.setName(userDto.getName());
+                }
+                if(userDto.getRole() != null
+                    && userDto.getRole() != user.getRole().getRoleName()){
+                    user.setRole(new Role(userDto.getRole()));
+                }
+                PasswordEncoder pe = GlobalPasswordEncoder.getGlobalEncoder();
+                if(userDto.getPassword() != null 
+                    && userDto.getPassword().length() > 0
+                    && !pe.matches(userDto.getPassword(), user.getPassword())){
+                    user.setPassword(pe.encode(userDto.getPassword()));
+                }
                 user.setEnabled(userDto.isEnabled());
-                user.setName(userDto.getName());
-                user.setRole(new Role(userDto.getRole()));
-                user.setUsername(username);
                 this.userRepository.save(user);
                 return ResponseEntity.ok().body(user);
             } else {
