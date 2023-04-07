@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import es.us.edscorbot.models.User;
 import es.us.edscorbot.repositories.IUserRepository;
-import es.us.edscorbot.util.GlobalPasswordEncoder;
 import es.us.edscorbot.util.Role;
 import es.us.edscorbot.util.UserDTO;
 
@@ -52,6 +51,7 @@ public class UserController {
             newUser.setEnabled(user.isEnabled());
             newUser.setName(user.getName());
             newUser.setRole(new Role(user.getRole()));
+            
             return ResponseEntity.ok().body(this.userRepository.save(newUser));
         } catch (Exception e){
             return new ResponseEntity<String>(e.toString(),HttpStatus.INTERNAL_SERVER_ERROR);
@@ -71,18 +71,32 @@ public class UserController {
             }
             
         } catch (Exception e){
-            return new ResponseEntity<String>(e.toString(),HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PutMapping(value="/users/{username}", produces=MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/users/{username}")
     @ResponseBody
-    public ResponseEntity<?> updateUser(@RequestBody User user){
-        
+    public ResponseEntity<?> updateUser(@PathVariable String username, @RequestBody UserDTO userDto){
+
         try{
-            return ResponseEntity.ok().body(this.userRepository.save(user));
+            Optional<User> found = this.userRepository.findById(username);
+            if (found.isPresent()) {
+                User user = found.get();
+                user.setEmail(userDto.getEmail());
+                user.setEnabled(userDto.isEnabled());
+                user.setName(userDto.getName());
+                user.setRole(new Role(userDto.getRole()));
+                user.setUsername(username);
+                this.userRepository.save(user);
+                return ResponseEntity.ok().body(user);
+            } else {
+                return new ResponseEntity<String>("User not found!", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            
         } catch (Exception e){
-            return new ResponseEntity<String>(e.toString(),HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
+            return new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
