@@ -2,7 +2,6 @@ package es.us.edscorbot.models;
 
 import es.us.edscorbot.util.Role;
 import es.us.edscorbot.util.UserRole;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
