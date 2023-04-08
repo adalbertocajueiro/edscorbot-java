@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.us.edscorbot.jwt.AuthenticationException;
 import es.us.edscorbot.models.User;
 import es.us.edscorbot.repositories.IUserRepository;
 import es.us.edscorbot.util.GlobalPasswordEncoder;
@@ -38,7 +39,12 @@ public class UserController {
         try{
             return ResponseEntity.ok().body(this.userRepository.findAll());
         } catch (Exception e){
-            return new ResponseEntity<String>(e.toString(),HttpStatus.INTERNAL_SERVER_ERROR);
+            if(e instanceof AuthenticationException){
+                return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            } else{
+                return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            
         }
     }
 
@@ -55,7 +61,11 @@ public class UserController {
             
             return ResponseEntity.ok().body(this.userRepository.save(newUser));
         } catch (Exception e){
-            return new ResponseEntity<String>(e.toString(),HttpStatus.INTERNAL_SERVER_ERROR);
+            if (e instanceof AuthenticationException) {
+                return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            } else {
+                return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
@@ -72,7 +82,11 @@ public class UserController {
             }
             
         } catch (Exception e){
-            return new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+            if (e instanceof AuthenticationException) {
+                return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            } else {
+                return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
@@ -110,8 +124,11 @@ public class UserController {
             }
             
         } catch (Exception e){
-            e.printStackTrace();
-            return new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+            if (e instanceof AuthenticationException) {
+                return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            } else {
+                return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
@@ -131,7 +148,11 @@ public class UserController {
             }
             
         } catch (Exception e){
-            return new ResponseEntity<String>(e.toString(),HttpStatus.INTERNAL_SERVER_ERROR);
+            if (e instanceof AuthenticationException) {
+                return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            } else {
+                return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 }
