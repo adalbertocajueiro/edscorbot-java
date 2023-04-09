@@ -9,6 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TrajectoryDTO {
-    private String username;
+    //private String username;
     private List<Point> points;
 }

@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import es.us.edscorbot.models.Trajectory;
 
 
-public interface ITrajectoryRepository extends JpaRepository<Trajectory,String> {
+public interface ITrajectoryRepository extends JpaRepository<Trajectory,Long> {
     
 }
