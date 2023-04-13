@@ -35,14 +35,13 @@ public class Trajectory {
      * The points of this trajectory
      */
     @Convert(converter=ListPointConverter.class)
-    @Column(name="points")
+    @Column(name="points", columnDefinition = "VARCHAR(1048576)")
     private List<Point> points;
 
     /**
      * The timestap of this trajectory.
      */
     @Id
-    @Column(name="timestamp")
     private long timestamp;
 
     
