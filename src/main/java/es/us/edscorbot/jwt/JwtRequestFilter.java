@@ -33,7 +33,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 || path.contains("/h2-console")
                 || path.equalsIgnoreCase("/api/signup")
                 || path.contains("/swagger-ui")
-                || path.startsWith("/v3");
+                || path.startsWith("/v3")
+                || path.contains("/edscorbot_service_webapi.yaml");
                 
         return r;
     }
