@@ -51,7 +51,6 @@ public class AuthenticationController {
 
     @PostMapping(value = "/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody LoginRequest credentials) throws Exception {
-
         try{
             authenticate(credentials.getUsername(), credentials.getPassword());
 
@@ -88,15 +87,15 @@ public class AuthenticationController {
 
     @PostMapping(value = "/signup", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> signup(@RequestBody SignupRequest body) {
+    public ResponseEntity<?> signup(@RequestBody SignupRequest signupBody) {
         try {
             User user = new User();
-            user.setUsername(body.getUsername());
+            user.setUsername(signupBody.getUsername());
             PasswordEncoder pe = GlobalPasswordEncoder.getGlobalEncoder();
-            user.setPassword(pe.encode(body.getPassword()));
-            user.setName(body.getName());
+            user.setPassword(pe.encode(signupBody.getPassword()));
+            user.setName(signupBody.getName());
             user.setEnabled(false);
-            user.setEmail(body.getEmail());
+            user.setEmail(signupBody.getEmail());
             user.setRole(new Role(UserRole.USER));
             
             Optional<User> found = this.userRepository.findById(user.getUsername());

@@ -1,25 +1,29 @@
 # Getting Started
-This repository contains the Web API for manipulating login, users and trajectories 
-of the ED Scorbot project. The service is implemented in Spring Boot and is intented
-to provide end-points to the fron-end, so that users can access the robotic arm as an intuitive service on the Web. 
+This repository contains the Web API for manipulating register, authentication, users and trajectories of the EDScorbot project. The service is implemented as a Spring Boot/Java microservice. 
 
 ### Tools Information
 This project has been developed using the following tools:
 * Java version 18.0.1.1
 * Apache Maven version 3.8.5
-* Spring Boot version 3.0.2
-* Visual Studio Code version 1.74.3 with extensions: Extension Pack for Java and Maven for Java.  
-
-### Install instructions
-* You can try to use your own versions of Java and Maven. If it does not work we advice to install the above versions
-* Download de project and unzip it
-* Open the project in Visual Studio Code (vscode). It might be possible vscode offers other extensions to be installed. Just accept it.
-* Run the class EdscorbotApplication.java and the server must start. Make sure that port 8080 is not in used. This step is more user friendly if executed from the vscode editor, as it presents options for Run and Debug above the `main` method.
-* Open the URL http://localhost:8080 in your browser and enjoy the swagger interface 
+* Spring Boot version 3.0.5
+* H2 Database version 2.1.214
+* Visual Studio Code version 1.77.1 with extensions: Extension Pack for Java and Maven for Java.  
 
 ### Project structure
 * After downloading and extracting the project, the folder `edscorbot-java` is the root folder of a Spring Boot project with maven, wich have a specific folder/files structure
-* We have disabled the automatic generation of the API and use the file `src/main/resources/static/escorbot_service_webapi.yaml` as the openapi documentation about the routes.
+* We have disabled the automatic generation of the API and use the file `src/main/resources/static/escorbot_service_webapi.yaml` as the openapi documentation/specification of the microservice.
+
+### Installing and running
+* You can try to use your own versions of Java and Maven. If it does not work we advice to install the above versions
+* Download de project and unzip it
+* Open the project in Visual Studio Code (vscode). It might be possible vscode offers other extensions to be installed. Just accept it.
+* Open the file application.properties `src/main/resources/application.properties` and check/adjust the values.
+* Pay attention on the database file name. It is associated to the property `spring.datasource.url`. Please adjust its value to point to a file in your file system. In our example, the value is `jdbc:h2:file:~/data/edscorbot` where `~/data/edscorbot` is the database file. In this case the folder `~/data` must exist. If the file `edscorbot` does not exist, it will be created at startup.
+* Run the class EdscorbotApplication.java and the server must start. Make sure that port informed in `application.properties` is not in use. This step is more user friendly if executed from the vscode editor, as it presents options for Run and Debug above the `main` method.
+* Open the URL http://localhost:PORT in your browser and enjoy the swagger interface. Will can use any browser to see the swagger interface.
+* You will be able to test routes only with browsers like Insomnia and Postman, that allow to select the Http method. You can test the route `/api/signup` or test the routes `/api/authenticate` to get the information to be used in all other routes.
+* There is a super user (`root/edscorbot`). Use it carefully!
+* Open the URL http://localhost:PORT/h2-console in your browser to access the database tool (click in `Test Connection` and afterwards in `Connect`) to access the database. You can also do some manipulation directly on the database. However, this is not suggested as the saved objects can cause side effects in the application if they do not have the suitable format (mainly trajectories)
 
 
 ### Reference Documentation

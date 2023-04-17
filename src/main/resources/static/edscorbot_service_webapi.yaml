@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.0.9
 info:
   description: It contains a REST API to provide useful functions related to the use of the robotic arm. The functions are related to the management of users (add, activate/deactivate, update, change roles, etc.), authentication/authorization and trajectory manipulation (CRUD operations)
   version: 1.0.0
@@ -10,6 +10,10 @@ info:
     name: Apache 2.0 (TO BE DEFINED)
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 
+servers:
+  - url: "http://192.168.1.104"
+    description: Development and test environments 
+      
 tags:
 - name: authentication
   description: Authentication support for all users, essentially involving login/logout
@@ -18,23 +22,21 @@ tags:
 - name: trajectories
   description: Suppoert for user trajectories management
 
+
 paths:
   /authenticate:
     post:
       tags:
       - authentication
-      summary: Performs user login
-      description: This route performs a validation of user credentials using some infrastructure (oauth, LDAP, etc.). After that, it returns a token to be used during any ohter conversation (via headers).
-      parameters:
-        - in: query
-          name: username
-          schema:
-            type: string
-        - in: query
-          name: password
-          schema:
-            type: string
-          
+      summary: Authenticates an user in the system
+      description: This route performs a validation of user credentials using an internal infrastructure (JWT). After that, it returns a token to be used during any other conversation (via headers).
+      requestBody:
+        x-body-name: credentials
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      
       responses:
         200:
           description: User successfully authenticated
@@ -43,85 +45,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
         401:
-          description: User not authenticated/allowed
+          description: User not authorized
           content:
             application/json:
               schema:
                 example: 
                   message: User not authenticated. Could not validate user credentials
-  /logout:
-    post:
-      tags:
-      - authentication
-      summary: Performs user logout 
-      description: This route performs the logout of the user
-      responses:
-        200:
-          description: User successfully disconnect
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponse'
-        401:
-          description: User not authenticated/allowed, if the user has not been previously logged in
-          content:
-            application/json:
-              schema:
-                example: 
-                  message: User not previously logged
-        500:
-          description: Error if some internal problem happens in the robotic arm service
-          content:
-            application/json:
-              schema:
-                example: 
-                  message: Internal error
-  /users:
-    get:
-      tags:
-      - users
-      summary: Find all users. For the moment, this funcion is available to all users, independent of their roles.
-      responses:
-        200:
-          description: Finds all users successfully. This route requires the user has been previously logged in.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FindAllUsersResponse'
-        401:
-          description: Find all users is not allowed to be executed
-          content:
-            application/json:
-              schema:
-                example:
-                  message: User not logged in
-    post:
-      tags:
-      - users
-      summary: Add a new user to the system
-      description: Add a new user to the application. This functionality is available only to admin users.
-      requestBody:
-        x-body-name: newUser
-        description: The new user to be added to the application
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        200:
-          description: User successfully added
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SaveResponse'
-        401:
-          description: Add new user is available only for admin users
-          content:
-            application/json:
-              schema:
-                example:
-                  message: Non admin users cannot add other users to the system
         500:
           description: Error if some internal problem happens
           content:
@@ -129,34 +58,111 @@ paths:
               schema:
                 example: 
                   message: Internal error
-  /users/{email}:
-    get:
+  /signup:
+    post:
       tags:
-      - users
-      summary: Get a user by email
-      parameters:
-        - in: path
-          name: email
-          schema:
-            type: string
-          required: true
-          description: The complete email of the user to be searched
+        - authentication
+      summary: Performs register of a new user
+      description: This route performs the register of a new user. Users are initially disabled to login the system untill a system administrator enables it.
+      requestBody:
+        x-body-name: signupBody
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+              
       responses:
         200:
-          description: Find a specific user. This route requires the user has been previously logged in.
+          description: User successfully authenticated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FindOneUserResponse'
+                $ref: '#/components/schemas/User'
+        412:
+          description: User already registered
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: User already registered. Pre-condition failed
+        500:
+          description: Error if some internal problem happens
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
+
+  /users:
+    get:
+      tags:
+      - users
+      summary: Find all users. This route requires the user is logged. For ADMIN users, it returns a list containing all users. Otherwise, it returns a list containing only the logged user (not ADMIN).
+      parameters:
+        - in: header
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username of the logged user
+          
+      responses:
+        200:
+          description: Finds all users successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
         401:
-          description: Finding users cannot be executed
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User not logged in
+        500:
+          description: Error if some internal problem happens
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
+  
+  /users/{username}:
+    get:
+      tags:
+      - users
+      summary: Get an user by username. This route requires the user is logged in.
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username of the user to be searched
+          
+        - in: header
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username of the logged user
+      responses:
+        200:
+          description: Find a specific user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          description: Not authorized. User is not logged in
           content:
             application/json:
               schema:
                 example:
                   message: User not allowed to use the system or not logged in
         404:
-          description: User not found
+          description: Requested user not found
           content:
             application/json:
               schema:
@@ -168,20 +174,25 @@ paths:
             application/json:
               schema:
                 example: 
-                  message: Internal error
+                  message: Internal error or non admin user cannot request data of anotehr user
     put:
       tags:
       - users
-      summary: Updates an existing user. Admin users can update information of any other user. Simple users can update only its own information
+      summary: Updates an existing user. This route requires the user is logged in. Admin users can update information of any other user. Simple users can update only its own information
       parameters:
         - in: path
-          name: email
-          description: User email
+          name: username
           required: true
           schema:
             type: string
+        - in: header
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username of the logged user
       requestBody:
-        x-body-name: user
+        x-body-name: userDto
         description: User object that needs to be updated
         required: true
         content:
@@ -191,11 +202,11 @@ paths:
       
       responses:
         200:
-          description: Updates a specific user. This route requires the user has been previously logged.
+          description: Updates a specific user. This route requires the user has been previously logged in.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateResponse'
+                $ref: '#/components/schemas/User'
         401:
           description: Updating user cannot executed
           content:
@@ -213,28 +224,41 @@ paths:
     delete:
       tags:
       - users
-      summary: Delete a user by email. This operation actually disables a user in order to maintain its interaction history with the system. Admin users can delete any other user. Simple users can delete only themselves
+      summary: Delete a user by username. This route requires the user has been previously logged in and actually disables the user in order to maintain its interaction history with the system. Admin users can delete any other user. Simple users can delete only themselves
       parameters:
         - in: path
-          name: email
+          name: username
           schema:
             type: string
           required: true
           description: Complete email of the user to be deleted
+        - in: header
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username of the logged user
       responses:
         200:
-          description: User successfully deactivated. This route requires the user has been previously logged in.
+          description: User successfully deactivated. 
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteResponse'
+                $ref: '#/components/schemas/User'
         401:
-          description: Deleting user cannot be executed
+          description: Not authorized
           content:
             application/json:
               schema:
                 example:
                   message: User is not logged in or user does not have privileges to perform this operation
+        404:
+          description: Requested user not found
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User was not found in the system
         500:
           description: Error if some internal problem happens
           content:
@@ -246,16 +270,23 @@ paths:
     get:
       tags: 
         - trajectories
-      summary: Get all saved trajectories of all users. Admin users can access all trajectories of all users. Simple users can access only their own trajectories
+      summary: Get all trajectories of all users. This route requires the user has previously logged in. Admin users can access all trajectories of all users. Simple users can access only their own trajectories
+      parameters:
+        - in: header
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username of the logged user 
       responses:
         200:
           description: Saved trajectories
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Trajectory'
+                $ref: '#/components/schemas/TrajectoryList'
         401:
-          description: Get all trajectories cannot be executed
+          description: Not authorized
           content:
             application/json:
               schema:
@@ -271,9 +302,16 @@ paths:
     post:
       tags: 
         - trajectories
-      summary: Saves a trajectory for logged user
+      summary: Saves a trajectory for logged user. This route requires the user has previously logged in.
+      parameters:
+        - in: header
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username of the logged user
       requestBody:
-        x-body-name: newTrajectory
+        x-body-name: trajectoryDto
         description: The new trajectory to be saved 
         required: true
         content:
@@ -281,14 +319,11 @@ paths:
             schema:
               type: object
               properties:
-                username: 
-                  type: string
                 points: 
                   type: array
                   items:
                     $ref: '#/components/schemas/Point'
               example:
-                username: adalberto.farias
                 points:
                   [
                     {
@@ -300,14 +335,14 @@ paths:
                   ]
       responses:
         200:
-          description: Trajectory saved to the logged user
+          description: Trajectory saved to the logged user. This route requires the user has previously logged in.
           content:
             application/json:
               schema:
                 example:
                   message: Trajectory saved
         401:
-          description: Save trajectory cannot be executed
+          description: Not authorized
           content:
             application/json:
               schema:
@@ -323,6 +358,54 @@ paths:
 
 components:
   schemas:
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: myusername
+        password:
+          type: string
+          example: mypassword
+          
+    LoginResponse:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        enabled:
+          type: boolean
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - USER
+        token:
+          type: string
+          description: A valid JWT token generated by the system
+    
+    SignupRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - USER
+          description: Initially is 'USER'
+          
     User:
       type: object
       properties:
@@ -353,107 +436,7 @@ components:
       description: A list of users manipulated by the application
       items:
           $ref: '#/components/schemas/User'
-      example: 
-       - email: name1@domain.com
-         name: John First
-         enabled: true
-         role: ADMIN
-       - email: name2@domain.com
-         name: David First
-         enabled: true
-         role: USER
-       
-    SaveResponse:
-      type: object
-      properties:
-        flag:
-          type: boolean
-          description: Save success or not
-        code:
-          type: integer
-          description: the HTTP response code
-          example: 200
-        message:
-          type: string
-          example: Save Success
-    UpdateResponse:
-      type: object
-      properties:
-        flag:
-          type: boolean
-          description: Update success or not
-        code:
-          type: integer
-          description: the HTTP response code
-          example: 200
-        message:
-          type: string
-          example: Update Success
-    DeleteResponse:
-      type: object
-      properties:
-        flag:
-          type: boolean
-          description: Delete success or not
-        code:
-          type: integer
-          description: the HTTP response code
-          example: 200
-        message:
-          type: string
-          example: Delete Success
-    LoginResponse:
-      type: object
-      properties:
-        flag:
-          type: boolean
-          description: Login success or not
-        code:
-          type: integer
-          description: the HTTP response code
-          example: 200
-        message:
-          type: string
-          example: Login Success
-        user:
-          $ref: '#/components/schemas/User'
-            
-    FindAllUsersResponse:
-      type: object
-      properties:
-        flag:
-          type: boolean
-          description: A boolean indicating if the response corresponds to success or error
-        code:
-          type: integer
-          description: the HTTP status code
-          example: 200
-        message:
-          type: string
-          description: An intuitive message encapsulated in the response
-          example: Find All users Succeded
-        data:
-          $ref: '#/components/schemas/UserList'
-          
-    FindOneUserResponse:
-      type: object
-      properties:
-        flag:
-          type: boolean
-          description: Success or not
-        code:
-          type: integer
-          description: The HTTP status code
-          example: 200
-        message:
-          type: string
-          example: Find One User Success
-        data:
-          example:
-              email: 1
-              name: John
-              enabled: true
-              role: ADMIN
+    
     Joint:
       type: integer
       description: The reference value (angle) of a joint.
@@ -469,3 +452,9 @@ components:
       description: A array of points to be applied to the arm.
       items:
         $ref: '#/components/schemas/Point'
+    
+    TrajectoryList:
+      type: array
+      description: A list of trajectories manipulated by the application
+      items:
+          $ref: '#/components/schemas/Trajectory'
