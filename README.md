@@ -3,7 +3,7 @@ This repository contains the Web API for manipulating register, authentication, 
 
 ### Tools Information
 This project has been developed using the following tools:
-* Java version 18.0.1.1
+* Java version 18.0.1.1 (Oracle JDK)
 * Apache Maven version 3.8.5
 * Spring Boot version 3.0.5
 * H2 Database version 2.1.214
