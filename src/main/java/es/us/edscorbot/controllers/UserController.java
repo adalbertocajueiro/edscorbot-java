@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +26,6 @@ import es.us.edscorbot.util.Role;
 import es.us.edscorbot.util.UserDTO;
 import es.us.edscorbot.util.UserRole;
 
-@CrossOrigin(origins = "/**")
 @RestController
 @RequestMapping("/api")
 public class UserController {
