@@ -27,12 +27,16 @@ This project has been developed using the following tools:
 
 
 ### Reference Documentation
-For further reference, please consider the following sections:
+For further reference, please consider the following items:
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.0.2/maven-plugin/reference/html/)
 * [Ed Scorbot Python] (https://github.com/RTC-research-group/Py-EDScorbotTool) - the Github projectcontaining the library (real implementation) of elementary/low level functions to access the robotic arm
 * [Ed Scorbot Documentation] (https://py-edscorbottool.readthedocs.io/en/latest/) - the user documentation/guide of the ED Scorbot tools (GUI, command line and detailed configurations). 
+
+For further reference, please consider the following items:
+* [EDScorbot Github Project](https://github.com/RTC-research-group/Py-EDScorbotTool) - the main Github project with details about the entire project and the low level code to control the robotic arm
+* [EDScorbot Documentation](https://py-edscorbottool.readthedocs.io/en/latest/) - documentation about the entire project
+* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
+* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.0.2/maven-plugin/reference/html/)
 
 ### Guides
 The following guides illustrate how to use some features concretely:
