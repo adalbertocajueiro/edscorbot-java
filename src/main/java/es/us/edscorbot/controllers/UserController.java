@@ -29,22 +29,22 @@ import es.us.edscorbot.util.UserRole;
 @RestController
 @RequestMapping("/api")
 public class UserController {
-    
+
     @Autowired
     private IUserRepository userRepository;
 
-    @GetMapping(value="/users", produces=MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> getAllUsers(@RequestHeader(value = "username") String username){
-        try{
+    public ResponseEntity<?> getAllUsers(@RequestHeader(value = "username") String username) {
+        try {
             List<User> users = this.userRepository.findAll();
-            if (!username.equals("root")) {
+            if (username.equals("root")) {
                 return ResponseEntity.ok().body(users);
             } else {
                 Optional<User> found = this.userRepository.findById(username);
                 if (found.isPresent()) {
                     User user = found.get();
-                    
+
                     if (user.getRole().getRoleName().equals(UserRole.USER)) {
                         users.removeIf(u -> !u.getUsername().equals(username));
                     }
@@ -53,38 +53,37 @@ public class UserController {
                     return new ResponseEntity<String>("User not found", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
-            
-            
-        } catch (Exception e){
-            if(e instanceof AuthenticationException){
+
+        } catch (Exception e) {
+            if (e instanceof AuthenticationException) {
                 return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-            } else{
+            } else {
                 return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            
+
         }
     }
 
-    @GetMapping(value="/users/{username}", produces=MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/users/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> getUser(@PathVariable String username,
-            @RequestHeader(value = "username") String loggedUsername){
-        
-        try{
+            @RequestHeader(value = "username") String loggedUsername) {
+
+        try {
             Optional<User> foundLogged = this.userRepository.findById(loggedUsername);
             if (foundLogged.isPresent()) {
                 User userLogged = foundLogged.get();
                 Optional<User> user = this.userRepository.findById(username);
-                if(userLogged.getRole().getRoleName().equals(UserRole.ADMIN)){
+                if (userLogged.getRole().getRoleName().equals(UserRole.ADMIN)) {
                     if (user.isPresent()) {
                         return ResponseEntity.ok().body(user.get());
                     } else {
                         return ResponseEntity.notFound().build();
                     }
                 } else {
-                    if (userLogged.getUsername().equals(user.get().getUsername())){
+                    if (userLogged.getUsername().equals(user.get().getUsername())) {
                         return ResponseEntity.ok().body(user.get());
-                    } else{
+                    } else {
                         return new ResponseEntity<String>("Non admin users cannot get information about other users",
                                 HttpStatus.INTERNAL_SERVER_ERROR);
                     }
@@ -92,9 +91,8 @@ public class UserController {
             } else {
                 return new ResponseEntity<String>("Logged user not found", HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            
-            
-        } catch (Exception e){
+
+        } catch (Exception e) {
             if (e instanceof AuthenticationException) {
                 return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
             } else {
@@ -106,30 +104,30 @@ public class UserController {
     @PutMapping("/users/{username}")
     @ResponseBody
     public ResponseEntity<?> updateUser(
-            @PathVariable String username, 
-            @RequestBody UserDTO userDto){
+            @PathVariable String username,
+            @RequestBody UserDTO userDto) {
 
-        try{
-            
+        try {
+
             Optional<User> found = this.userRepository.findById(username);
             if (found.isPresent()) {
                 User user = found.get();
-                if(userDto.getEmail() != null 
-                    && !userDto.getEmail().equals(user.getEmail())){
+                if (userDto.getEmail() != null
+                        && !userDto.getEmail().equals(user.getEmail())) {
                     user.setEmail(userDto.getEmail());
                 }
-                if(userDto.getName() != null 
-                    && !userDto.getName().equals(user.getName())){
+                if (userDto.getName() != null
+                        && !userDto.getName().equals(user.getName())) {
                     user.setName(userDto.getName());
                 }
-                if(userDto.getRole() != null
-                    && userDto.getRole() != user.getRole().getRoleName()){
+                if (userDto.getRole() != null
+                        && userDto.getRole() != user.getRole().getRoleName()) {
                     user.setRole(new Role(userDto.getRole()));
                 }
                 PasswordEncoder pe = GlobalPasswordEncoder.getGlobalEncoder();
-                if(userDto.getPassword() != null 
-                    && userDto.getPassword().length() > 0
-                    && !pe.matches(userDto.getPassword(), user.getPassword())){
+                if (userDto.getPassword() != null
+                        && userDto.getPassword().length() > 0
+                        && !pe.matches(userDto.getPassword(), user.getPassword())) {
                     user.setPassword(pe.encode(userDto.getPassword()));
                 }
                 user.setEnabled(userDto.isEnabled());
@@ -138,8 +136,8 @@ public class UserController {
             } else {
                 return new ResponseEntity<String>("User not found!", HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            
-        } catch (Exception e){
+
+        } catch (Exception e) {
             if (e instanceof AuthenticationException) {
                 return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
             } else {
@@ -148,18 +146,18 @@ public class UserController {
         }
     }
 
-    @DeleteMapping(value="/users/{username}", produces=MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/users/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> deleteUser(
             @PathVariable String username,
-            @RequestHeader(value = "username") String loggedUsername){
-        
-        try{
+            @RequestHeader(value = "username") String loggedUsername) {
+
+        try {
             Optional<User> foundLogged = this.userRepository.findById(loggedUsername);
             if (foundLogged.isPresent()) {
                 User userLogged = foundLogged.get();
                 Optional<User> user = this.userRepository.findById(username);
-                if(userLogged.getRole().getRoleName().equals(UserRole.ADMIN)){
+                if (userLogged.getRole().getRoleName().equals(UserRole.ADMIN)) {
                     if (user.isPresent()) {
                         User realUser = user.get();
                         realUser.setEnabled(false);
@@ -169,12 +167,12 @@ public class UserController {
                         return ResponseEntity.notFound().build();
                     }
                 } else {
-                    if (userLogged.getUsername().equals(user.get().getUsername())){
+                    if (userLogged.getUsername().equals(user.get().getUsername())) {
                         User realUser = user.get();
                         realUser.setEnabled(false);
                         this.userRepository.save(realUser);
                         return ResponseEntity.ok().body(realUser);
-                    } else{
+                    } else {
                         return new ResponseEntity<String>("Non admin users cannot get information about other users",
                                 HttpStatus.INTERNAL_SERVER_ERROR);
                     }
@@ -182,8 +180,8 @@ public class UserController {
             } else {
                 return new ResponseEntity<String>("Logged user not found", HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            
-        } catch (Exception e){
+
+        } catch (Exception e) {
             if (e instanceof AuthenticationException) {
                 return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
             } else {
