@@ -37,17 +37,23 @@ public class UserController {
     @ResponseBody
     public ResponseEntity<?> getAllUsers(@RequestHeader(value = "username") String username){
         try{
-            Optional<User> found = this.userRepository.findById(username);
-            if (found.isPresent()) {
-                User user = found.get();
-                List<User> users = this.userRepository.findAll();
-                if(user.getRole().getRoleName().equals(UserRole.USER)){
-                    users.removeIf(u -> !u.getUsername().equals(username));
-                } 
+            List<User> users = this.userRepository.findAll();
+            if (!username.equals("root")) {
                 return ResponseEntity.ok().body(users);
             } else {
-                return new ResponseEntity<String>("Trajectory owner not found", HttpStatus.INTERNAL_SERVER_ERROR);
+                Optional<User> found = this.userRepository.findById(username);
+                if (found.isPresent()) {
+                    User user = found.get();
+                    
+                    if (user.getRole().getRoleName().equals(UserRole.USER)) {
+                        users.removeIf(u -> !u.getUsername().equals(username));
+                    }
+                    return ResponseEntity.ok().body(users);
+                } else {
+                    return new ResponseEntity<String>("User not found", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
             }
+            
             
         } catch (Exception e){
             if(e instanceof AuthenticationException){
@@ -104,6 +110,7 @@ public class UserController {
             @RequestBody UserDTO userDto){
 
         try{
+            
             Optional<User> found = this.userRepository.findById(username);
             if (found.isPresent()) {
                 User user = found.get();
