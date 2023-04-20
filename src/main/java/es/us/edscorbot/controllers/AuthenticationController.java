@@ -10,6 +10,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,12 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import es.us.edscorbot.jwt.AuthenticationException;
 import es.us.edscorbot.jwt.CustomAuthenticationProvider;
 import es.us.edscorbot.jwt.JwtTokenUtil;
 import es.us.edscorbot.jwt.JwtUserDetailsService;
 import es.us.edscorbot.models.User;
 import es.us.edscorbot.repositories.IUserRepository;
+import es.us.edscorbot.util.ApplicationError;
+import es.us.edscorbot.util.ErrorDTO;
 import es.us.edscorbot.util.GlobalPasswordEncoder;
 import es.us.edscorbot.util.LoginRequest;
 import es.us.edscorbot.util.LoginResponse;
@@ -75,10 +77,18 @@ public class AuthenticationController {
             response.setToken(token);
 
             return ResponseEntity.ok(response);
-        } catch (AuthenticationException e){
+        } catch (BadCredentialsException e){
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        } catch(DisabledException e){
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        } catch (UsernameNotFoundException e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+            ErrorDTO error = new ErrorDTO();
+            error.setError(ApplicationError.INTERNAL_ERROR);
+            error.setMessage(e.getMessage());
+            error.setDetailedMessage(e.getMessage());
+            return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
     }
@@ -104,22 +114,26 @@ public class AuthenticationController {
                 return ResponseEntity.ok().body(user);
             }    
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+            ErrorDTO error = new ErrorDTO();
+            error.setError(ApplicationError.INTERNAL_ERROR);
+            error.setMessage(e.getMessage());
+            error.setDetailedMessage(e.getMessage());
+            return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private void authenticate(String username, String password) throws Exception {
+    private void authenticate(String username, String password) throws DisabledException, BadCredentialsException{
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
             final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             PasswordEncoder pe = GlobalPasswordEncoder.getGlobalEncoder();
             if (!pe.matches(password, userDetails.getPassword())) {
-                throw new AuthenticationException("Invalid user/password");
+                throw new BadCredentialsException("Invalid user/password");
             }
         } catch (DisabledException e) {
-            throw new Exception("USER_DISABLED", e);
+            throw e;
         } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
+            throw e;
         }
     }
 }

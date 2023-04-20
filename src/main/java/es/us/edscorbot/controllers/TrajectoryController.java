@@ -22,6 +22,8 @@ import es.us.edscorbot.models.Trajectory;
 import es.us.edscorbot.models.User;
 import es.us.edscorbot.repositories.ITrajectoryRepository;
 import es.us.edscorbot.repositories.IUserRepository;
+import es.us.edscorbot.util.ApplicationError;
+import es.us.edscorbot.util.ErrorDTO;
 import es.us.edscorbot.util.TrajectoryDTO;
 import es.us.edscorbot.util.UserRole;
 
@@ -41,29 +43,33 @@ public class TrajectoryController {
     public ResponseEntity<?> getAllTrajectories(@RequestHeader(value = "username") String username){
         try{
             List<Trajectory> trajectories = this.trajectoryRepository.findAll();
-            if(!username.equals("root")){
-                Optional<User> user = this.userRepository.findById(username);
-                if (user.isPresent()) {
-                    User loggedUser = user.get();
-                    if (loggedUser.getRole().getRoleName() == UserRole.USER) {
-                        trajectories.removeIf(t -> !t.getOwner().getUsername().equals(username));
-                    }
-                    return ResponseEntity.ok().body(trajectories);
-                } else {
-                    return new ResponseEntity<String>("Trajectory owner not found", HttpStatus.INTERNAL_SERVER_ERROR);
+            Optional<User> user = this.userRepository.findById(username);
+            if (user.isPresent()) {
+                User loggedUser = user.get();
+                if (loggedUser.getRole().getRoleName() == UserRole.USER) {
+                    trajectories.removeIf(t -> !t.getOwner().getUsername().equals(username));
                 }
-            } else {
                 return ResponseEntity.ok().body(trajectories);
+            } else {
+                ErrorDTO error = new ErrorDTO();
+                error.setError(ApplicationError.INTERNAL_ERROR);
+                error.setMessage("Trajectory owner not found");
+                error.setDetailedMessage("Trajectory owner not found");
+                return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
             }
             
-            
         } catch (Exception e){
+            
             if (e instanceof AuthenticationException) {
                 return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
             } else {
-                return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+                ErrorDTO error = new ErrorDTO();
+                error.setError(ApplicationError.INTERNAL_ERROR);
+                error.setMessage(e.getMessage());
+                error.setDetailedMessage(e.getMessage());
+                return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        }
+        } 
     }
 
     @PostMapping(value="/trajectories", produces=MediaType.APPLICATION_JSON_VALUE)
@@ -85,7 +91,11 @@ public class TrajectoryController {
             if (e instanceof AuthenticationException) {
                 return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
             } else {
-                return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+                ErrorDTO error = new ErrorDTO();
+                error.setError(ApplicationError.INTERNAL_ERROR);
+                error.setMessage(e.getMessage());
+                error.setDetailedMessage(e.getMessage());
+                return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
     }
@@ -112,12 +122,19 @@ public class TrajectoryController {
                 }
                 return ResponseEntity.ok().body(true);
             } else {
-                return new ResponseEntity<String>("Trajectory owner not found", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+                ErrorDTO error = new ErrorDTO();
+                error.setError(ApplicationError.INTERNAL_ERROR);
+                error.setMessage("Trajectory owner not found");
+                error.setDetailedMessage("Trajectory owner not found");
+                return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);            }
         } catch (Exception e){
             if (e instanceof AuthenticationException) {
                 return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
             } else {
+                ErrorDTO error = new ErrorDTO();
+                error.setError(ApplicationError.INTERNAL_ERROR);
+                error.setMessage(e.getMessage());
+                error.setDetailedMessage(e.getMessage());
                 return new ResponseEntity<String>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
