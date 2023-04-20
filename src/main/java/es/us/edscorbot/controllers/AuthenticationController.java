@@ -61,14 +61,7 @@ public class AuthenticationController {
 
             User user = new User();
             LoginResponse response = new LoginResponse();
-
-            if (!credentials.getUsername().equals("root")) {
-                user = this.userRepository.findById(credentials.getUsername()).get();
-
-            } else {
-                user = UserBuilder.rootUser();
-            }
-
+            user = this.userRepository.findById(credentials.getUsername()).get();
             response.setEmail(user.getEmail());
             response.setUsername(user.getUsername());
             response.setEnabled(user.isEnabled());
