@@ -221,51 +221,7 @@ paths:
               schema:
                 example: 
                   message: Internal error
-    delete:
-      tags:
-      - users
-      summary: Delete a user by username. This route requires the user has been previously logged in and actually disables the user in order to maintain its interaction history with the system. Admin users can delete any other user. Simple users can delete only themselves
-      parameters:
-        - in: path
-          name: username
-          schema:
-            type: string
-          required: true
-          description: Complete email of the user to be deleted
-        - in: header
-          name: username
-          schema:
-            type: string
-          required: true
-          description: The username of the logged user
-      responses:
-        200:
-          description: User successfully deactivated. 
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        401:
-          description: Not authorized
-          content:
-            application/json:
-              schema:
-                example:
-                  message: User is not logged in or user does not have privileges to perform this operation
-        404:
-          description: Requested user not found
-          content:
-            application/json:
-              schema:
-                example:
-                  message: User was not found in the system
-        500:
-          description: Error if some internal problem happens
-          content:
-            application/json:
-              schema:
-                example: 
-                  message: Internal error
+    
   /trajectories:
     get:
       tags: 
