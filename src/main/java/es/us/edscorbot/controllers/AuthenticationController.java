@@ -30,7 +30,6 @@ import es.us.edscorbot.util.LoginRequest;
 import es.us.edscorbot.util.LoginResponse;
 import es.us.edscorbot.util.Role;
 import es.us.edscorbot.util.SignupRequest;
-import es.us.edscorbot.util.UserBuilder;
 import es.us.edscorbot.util.UserRole;
 
 @RestController
