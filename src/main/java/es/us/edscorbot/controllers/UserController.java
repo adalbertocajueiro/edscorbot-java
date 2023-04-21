@@ -97,7 +97,7 @@ public class UserController {
                     error.setError(ApplicationError.USER_NOT_FOUND);
                     error.setMessage("User not found: " + loggedUsername);
                     error.setDetailedMessage("User not found: " + loggedUsername);
-                    return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+                    return new ResponseEntity<ErrorDTO>(error, HttpStatus.NOT_FOUND);
                 }
 
             } else {
@@ -190,7 +190,11 @@ public class UserController {
                     }
 
                 } else {
-                    return new ResponseEntity<String>("User not found: " + username, HttpStatus.INTERNAL_SERVER_ERROR);
+                    ErrorDTO error = new ErrorDTO();
+                    error.setError(ApplicationError.USER_NOT_FOUND);
+                    error.setMessage("User not found: " + username);
+                    error.setDetailedMessage("User not found: " + username);
+                    return new ResponseEntity<ErrorDTO>(error, HttpStatus.NOT_FOUND);
                 }
             } else {
                 ErrorDTO error = new ErrorDTO();

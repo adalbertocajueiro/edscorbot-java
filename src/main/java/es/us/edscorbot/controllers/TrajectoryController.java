@@ -53,9 +53,9 @@ public class TrajectoryController {
             } else {
                 ErrorDTO error = new ErrorDTO();
                 error.setError(ApplicationError.INTERNAL_ERROR);
-                error.setMessage("Trajectory owner not found");
-                error.setDetailedMessage("Trajectory owner not found");
-                return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+                error.setMessage("Trajectory owner not found: " + username);
+                error.setDetailedMessage("Trajectory owner not found: " + username);
+                return new ResponseEntity<ErrorDTO>(error, HttpStatus.NOT_FOUND);
             }
             
         } catch (Exception e){
@@ -85,7 +85,11 @@ public class TrajectoryController {
                 trajectory.setPoints(trajectoryDTO.getPoints());
                 return ResponseEntity.ok().body(this.trajectoryRepository.save(trajectory));
             } else {
-                return new ResponseEntity<String>("Trajectory owner not found", HttpStatus.INTERNAL_SERVER_ERROR);
+                ErrorDTO error = new ErrorDTO();
+                error.setError(ApplicationError.INTERNAL_ERROR);
+                error.setMessage("Trajectory owner not found: " + username);
+                error.setDetailedMessage("Trajectory owner not found: " + username);
+                return new ResponseEntity<ErrorDTO>(error, HttpStatus.NOT_FOUND);
             }
         } catch (Exception e){
             if (e instanceof AuthenticationException) {
