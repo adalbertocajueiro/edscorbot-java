@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import es.us.edscorbot.jwt.AuthenticationException;
 import es.us.edscorbot.jwt.JwtTokenUtil;
 import es.us.edscorbot.models.User;
 import es.us.edscorbot.repositories.IUserRepository;
@@ -81,15 +80,11 @@ public class UserController {
             return new ResponseEntity<ErrorDTO>(error, HttpStatus.UNAUTHORIZED);
 
         } catch (Exception e) {
-            if (e instanceof AuthenticationException) {
-                return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-            } else {
-                ErrorDTO error = new ErrorDTO();
-                error.setError(ApplicationError.INTERNAL_ERROR);
-                error.setMessage(e.getMessage());
-                error.setDetailedMessage(e.getMessage());
-                return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            ErrorDTO error = new ErrorDTO();
+            error.setError(ApplicationError.INTERNAL_ERROR);
+            error.setMessage(e.getMessage());
+            error.setDetailedMessage(e.getMessage());
+            return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -151,15 +146,11 @@ public class UserController {
             return new ResponseEntity<ErrorDTO>(error, HttpStatus.UNAUTHORIZED);
 
         } catch (Exception e) {
-            if (e instanceof AuthenticationException) {
-                return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-            } else {
-                ErrorDTO error = new ErrorDTO();
-                error.setError(ApplicationError.INTERNAL_ERROR);
-                error.setMessage(e.getMessage());
-                error.setDetailedMessage(e.getMessage());
-                return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            ErrorDTO error = new ErrorDTO();
+            error.setError(ApplicationError.INTERNAL_ERROR);
+            error.setMessage(e.getMessage());
+            error.setDetailedMessage(e.getMessage());
+            return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -264,15 +255,11 @@ public class UserController {
             return new ResponseEntity<ErrorDTO>(error, HttpStatus.UNAUTHORIZED);
 
         } catch (Exception e) {
-            if (e instanceof AuthenticationException) {
-                return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-            } else {
-                ErrorDTO error = new ErrorDTO();
-                error.setError(ApplicationError.INTERNAL_ERROR);
-                error.setMessage(e.getMessage());
-                error.setDetailedMessage(e.getMessage());
-                return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            ErrorDTO error = new ErrorDTO();
+            error.setError(ApplicationError.INTERNAL_ERROR);
+            error.setMessage(e.getMessage());
+            error.setDetailedMessage(e.getMessage());
+            return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
