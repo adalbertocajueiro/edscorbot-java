@@ -8,19 +8,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import es.us.edscorbot.jwt.CustomAuthenticationProvider;
-import es.us.edscorbot.jwt.JwtTokenUtil;
-import es.us.edscorbot.jwt.JwtUserDetailsService;
+import es.us.edscorbot.jwt.Authenticator;
 import es.us.edscorbot.models.User;
 import es.us.edscorbot.repositories.IUserRepository;
 import es.us.edscorbot.util.ApplicationError;
@@ -34,16 +31,11 @@ import es.us.edscorbot.util.UserRole;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class AuthenticationController {
 
     @Autowired
-    private CustomAuthenticationProvider authenticationManager;
-
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
-
-    @Autowired
-    private JwtUserDetailsService userDetailsService;
+    private Authenticator authenticator;
 
     @Autowired
     private IUserRepository userRepository;
@@ -51,12 +43,7 @@ public class AuthenticationController {
     @PostMapping(value = "/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody LoginRequest credentials) throws Exception {
         try{
-            authenticate(credentials.getUsername(), credentials.getPassword());
-
-            final UserDetails userDetails = userDetailsService
-                    .loadUserByUsername(credentials.getUsername());
-
-            final String token = jwtTokenUtil.generateToken(userDetails);
+            String token = authenticator.authenticate(credentials.getUsername(), credentials.getPassword());
 
             User user = new User();
             LoginResponse response = new LoginResponse();
@@ -111,21 +98,6 @@ public class AuthenticationController {
             error.setMessage(e.getMessage());
             error.setDetailedMessage(e.getMessage());
             return new ResponseEntity<ErrorDTO>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void authenticate(String username, String password) throws DisabledException, BadCredentialsException{
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            PasswordEncoder pe = GlobalPasswordEncoder.getGlobalEncoder();
-            if (!pe.matches(password, userDetails.getPassword())) {
-                throw new BadCredentialsException("Invalid user/password");
-            }
-        } catch (DisabledException e) {
-            throw e;
-        } catch (BadCredentialsException e) {
-            throw e;
         }
     }
 }
