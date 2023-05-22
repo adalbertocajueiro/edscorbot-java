@@ -332,7 +332,48 @@ paths:
               schema:
                 example: 
                   message: Internal error
-
+                  
+  /trajectories/{timestamp}:
+    delete:
+      tags: 
+        - trajectories
+      summary: Deletes a specific trajectory. This route requires the user has previously logged in. Admin users can delete all trajectories of all users. Simple users can delete only their own trajectories
+      parameters:
+        - in: path
+          name: timestamp
+          schema:
+            type: string
+          required: true
+          description: The timestamp indentifying a trajectory 
+        - in: header
+          name: userToken
+          schema:
+            type: string
+          required: true
+          description: The token of the logged user
+      responses:
+        200:
+          description: Trajectory deleted
+          content:
+            application/json:
+              schema:
+                example:
+                  message: true
+        401:
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                example:
+                  message: User is not logged in or cannot delete this trajectory
+        500:
+          description: Error if some internal problem happens
+          content:
+            application/json:
+              schema:
+                example: 
+                  message: Internal error
+                  
 components:
   schemas:
     LoginRequest:
